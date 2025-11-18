@@ -1171,5 +1171,7 @@ components:
           schema:
             $ref: "#/components/schemas/Error"
 
+#SECURITY  UPGRADE?
+
 security:
   - bearerAuth: []
