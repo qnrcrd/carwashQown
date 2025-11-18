@@ -1,7 +1,7 @@
 openapi: '3.0.3'
 info:
   title: Washing Car API
-  version: '0.2'
+  version: '0.3'
 tags:
   - name: Auth
     description: Аутентификация и регистрация по СМС
@@ -13,6 +13,12 @@ tags:
     description: Записи на мойку
   - name: CarWashes
     description: Управление автомойками
+  - name: Services
+    description: Управление услугами
+  - name: Workers
+    description: Управление работниками
+  - name: Slots
+    description: Управление временными слотами
 
 servers:
   - url: http://localhost:3000/api/v1
@@ -300,6 +306,10 @@ paths:
         '403':
           $ref: "#/components/responses/Unauthorized"
 
+###########################################################
+#СОМНИТЕЛЬНО
+#ПЕРЕСМОТРЕТЬ НЕОБХОДИМОСТЬ
+
   /users/{userId}/cars:
     get:
       summary: Получить машины пользователя
@@ -349,6 +359,60 @@ paths:
       responses:
         '200':
           description: Машина добавлена
+        '404':
+          $ref: "#/components/responses/NotFound"
+        '403':
+          $ref: "#/components/responses/Unauthorized"
+
+  #############################################
+  
+  
+  /users/{userId}/appointments:
+    get:
+      summary: Получить записи пользователя
+      tags:
+        - Appointments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled', 'active']
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  appointments:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Appointment"
+                  total:
+                    type: integer
         '404':
           $ref: "#/components/responses/NotFound"
         '403':
@@ -426,6 +490,11 @@ paths:
           schema:
             type: number
             format: float
+        - name: serviceId
+          in: query
+          required: false
+          schema:
+            type: integer
       responses:
         '200':
           description: OK
@@ -435,6 +504,132 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/CarWash"
+
+  /car-washes/{carWashId}:
+    get:
+      summary: Получить детальную информацию о мойке
+      tags:
+        - CarWashes
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: carWashId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarWashDetailed"
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+  /car-washes/{carWashId}/services:
+    get:
+      summary: Получить услуги мойки
+      tags:
+        - Services
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: carWashId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Service"
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+  /car-washes/{carWashId}/slots:
+    get:
+      summary: Получить доступные слоты для мойки
+      tags:
+        - Slots
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: carWashId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: serviceId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Slot"
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+  /car-washes/{carWashId}/workers:
+    get:
+      summary: Получить работников мойки
+      tags:
+        - Workers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: carWashId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Worker"
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+  /services:
+    get:
+      summary: Получить все доступные услуги
+      tags:
+        - Services
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Service"
 
   /appointments:
     post:
@@ -460,6 +655,141 @@ paths:
           description: Неверные данные записи
         '409':
           description: Время уже занято
+
+  /appointments/{appointmentId}:
+    get:
+      summary: Получить информацию о записи
+      tags:
+        - Appointments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: appointmentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        '403':
+          $ref: "#/components/responses/Unauthorized"
+
+  /appointments/{appointmentId}/confirm:
+    post:
+      summary: Подтвердить запись
+      tags:
+        - Appointments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: appointmentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Запись подтверждена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        '403':
+          $ref: "#/components/responses/Unauthorized"
+        '409':
+          description: Невозможно подтвердить запись
+
+  /appointments/{appointmentId}/cancel:
+    post:
+      summary: Отменить запись
+      tags:
+        - Appointments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: appointmentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Запись отменена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        '403':
+          $ref: "#/components/responses/Unauthorized"
+        '409':
+          description: Невозможно отменить запись
+
+  /appointments/{appointmentId}/complete:
+    post:
+      summary: Завершить запись (для работников)
+      tags:
+        - Appointments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: appointmentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Запись завершена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        '403':
+          $ref: "#/components/responses/Unauthorized"
+
+  /workers:
+    get:
+      summary: Получить список работников
+      tags:
+        - Workers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: carWashId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Worker"
 
 components:
   securitySchemes:
@@ -500,6 +830,15 @@ components:
         car_wash_id:
           type: integer
           example: 1
+        preferences:
+          type: object
+          properties:
+            notifications:
+              type: boolean
+              example: true
+            reminders:
+              type: boolean
+              example: true
         created_at:
           type: string
           format: date-time
@@ -517,6 +856,13 @@ components:
           type: string
           format: email
           example: 'user@example.com'
+        preferences:
+          type: object
+          properties:
+            notifications:
+              type: boolean
+            reminders:
+              type: boolean
 
     CarWash:
       type: object
@@ -558,6 +904,114 @@ components:
         is_active:
           type: boolean
           example: true
+
+    CarWashDetailed:
+      allOf:
+        - $ref: '#/components/schemas/CarWash'
+        - type: object
+          properties:
+            services:
+              type: array
+              items:
+                $ref: "#/components/schemas/Service"
+            boxes:
+              type: array
+              items:
+                $ref: "#/components/schemas/Box"
+            workers:
+              type: array
+              items:
+                $ref: "#/components/schemas/Worker"
+
+    Service:
+      type: object
+      required:
+        - id
+        - name
+        - price
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: 'Комплексная мойка'
+        description:
+          type: string
+          example: 'Полная мойка автомобиля с сушкой'
+        price:
+          type: number
+          format: float
+          example: 1500.00
+        duration:
+          type: integer
+          example: 60
+        is_active:
+          type: boolean
+          example: true
+
+    Worker:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: 'Петр Иванов'
+        position:
+          type: string
+          example: 'мойщик'
+        is_active:
+          type: boolean
+          example: true
+
+    Box:
+      type: object
+      required:
+        - id
+        - number
+      properties:
+        id:
+          type: integer
+          example: 1
+        number:
+          type: string
+          example: 'A1'
+        is_active:
+          type: boolean
+          example: true
+
+    Slot:
+      type: object
+      required:
+        - id
+        - date
+        - start_time
+        - end_time
+        - is_available
+      properties:
+        id:
+          type: integer
+          example: 1
+        date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        is_available:
+          type: boolean
+          example: true
+        box_id:
+          type: integer
+          example: 1
 
     CommonCarFields:
       type: object
@@ -607,7 +1061,7 @@ components:
       required:
         - id
         - user_id
-        - car_id
+        - car_is
         - service_id
         - box_id
         - car_wash_id
@@ -621,7 +1075,7 @@ components:
         user_id:
           type: string
           format: uuid
-        car_id:
+        car_is:
           type: integer
         service_id:
           type: integer
@@ -649,18 +1103,24 @@ components:
         created_at:
           type: string
           format: date-time
+        service:
+          $ref: "#/components/schemas/Service"
+        car_wash:
+          $ref: "#/components/schemas/CarWash"
+        car:
+          $ref: "#/components/schemas/CarWId"
 
     AppointmentCreate:
       type: object
       required:
-        - car_id
+        - car_is
         - service_id
         - box_id
         - car_wash_id
         - scheduled_date
         - scheduled_time
       properties:
-        car_id:
+        car_is:
           type: integer
         service_id:
           type: integer
@@ -676,6 +1136,8 @@ components:
           format: time
         notes:
           type: string
+        worker_id:
+          type: integer
 
     Error:
       type: object
