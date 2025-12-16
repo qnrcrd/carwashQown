@@ -62,14 +62,27 @@
 Максимальное количество машин: 580 (10 боксов * 58) машин/день.
 Минимальное количество машин: 0 или 290 (5 боксов * 58) машин/день.
 ```
-## Что уже включено в проект:
- - Требования ☑
- - SD Авторизации\Регистрации ☑
- - SD Записи на автомойку ☑
- - ERD ☑
- - UseCase Diagram ☑
- - UserStory ☑
- - Story Mapping ☑
- - Статусная модель ☑
- - OpenAPI ☑
-
+## Артефакты проекта
+### :left_right_arrow: Диаграмма связи сущностей (Entity-Relationship Diagramm)
+- [код диаграммы](./ERD_code.txt)
+- ![Диаграмма связи сущностей](./ERD.png)
+### :chart_with_upwards_trend: Статусная модель (Status Model)
+- [код статусной модели](./orderstatusmodel.uml)
+- ![Статусная модель](./orderstatusmodel_pic.png)
+### :arrows_counterclockwise: Диаграмма последовательности (Sequence Diagramm)
+- [код диаграммы](./sequencediagramSERVER-DB.uml)
+- ![sequence diagramm](./sequencediagram_pic.png)
+### :page_facing_up: C4 Диаграммы (C4 diagramm)
+- диаграмма контекста системы
+![диаграмма контекста системы](https://github.com/qnrcrd/carwashQown/blob/main/system%20context%20diagramm.png)
+- диаграмма программной системы
+![диаграмма программной системы](https://github.com/qnrcrd/carwashQown/blob/main/programm%20system%20diagramm.png)
+### :world_map: Карта пользовательских историй (User Story Mapping)
+- [код карты](https://github.com/qnrcrd/carwashQown/blob/main/User%20Story%20Mapping.unidraw)
+- ![User story map](./UserStoryMapping.png)
+### :bookmark_tabs: Прецеденты использования (Use Cases)
+- [код диаграммы](UML_UseCases.plantuml)
+- ![use cases](./UseCases_pic.png)
+### :green_book: Дополнительная Документация
+- [API код](./api-docs.yaml)
+- [Функционал пользователей](./UseCaseTT.md)
